@@ -461,7 +461,7 @@ function renderMolecule(m){
   }
 
   // Single-chain families
-  const pts = zigzagPoints(n);
+  const pts = zigzagPoints(m.n);
   svg.innerHTML += drawBackbone(pts, m.bondOrders);
 
   // Functional group drawing
