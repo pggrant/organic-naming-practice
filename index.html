@@ -343,12 +343,13 @@ function generateMolecule(){
     // ✅ normalize AFTER pos/locant set and bondOrders set
     normalizeOrientation(n, fg, fgInfo, bondOrders);
 
-    if (fg === "alkyne" && n === 9) {
-  console.log("n=9 yne pos(after normalize) =", fgInfo.pos);
-    }
+    
 
     const desc = describeMolecule(n, fg, fgInfo);
     return { n, fg, bondOrders, fgInfo, ...desc };
+    if (fg === "alkyne" && n === 9) {
+  console.log("n=9 yne pos(after normalize) =", fgInfo.pos);
+    }
   }
 }
   // Now generate the correct name/accepted answers using the normalized locants
