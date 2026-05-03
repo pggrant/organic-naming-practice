@@ -370,7 +370,20 @@ return { n, fg, bondOrders, fgInfo, ...desc };
   }
 }
 
-   
+function acceptedAnswers(n, fg, fgInfo, canonical){
+  const set = new Set();
+  set.add(canonical);
+
+  // Basic locant rearrangements (very conservative)
+  if (fg === "alcohol" || fg === "amine" || fg === "ketone") {
+    const loc = fgInfo.locant;
+    const base = canonical.replace(/-\d+-/, "-");
+    set.add(`${loc}-${base}`);
+  }
+
+  return Array.from(set);
+}
+  
 function describeMolecule(n, fg, fgInfo){
   let name = "";
 
