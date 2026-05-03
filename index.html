@@ -444,6 +444,7 @@ function acceptedLocantFormats(canonical) {
    Drawing for all functional groups
 ========================= */
 function renderMolecule(m){
+  const n = m.n;   // ✅ create local alias
   const svg = document.getElementById("molSvg");
   svg.innerHTML = ""; // clear
 
@@ -460,7 +461,7 @@ function renderMolecule(m){
   }
 
   // Single-chain families
-  const pts = zigzagPoints(m.n);
+  const pts = zigzagPoints(n);
   svg.innerHTML += drawBackbone(pts, m.bondOrders);
 
   // Functional group drawing
