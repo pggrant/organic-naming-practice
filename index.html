@@ -166,40 +166,42 @@ function root(n){ return ROOT[n] || ""; }
 function alkaneName(n){ return ALKANE[n] || (root(n)+"ane"); }
 
 function normalizeOrientation(n, fg, fgInfo, bondOrders) {
-  // Returns { fgInfo, bondOrders } adjusted so numbering from the left
-  // gives the lowest possible locant for the key feature.
+  const flipChain = () => bondOrders.reverse();
 
-  // helper to reverse the chain
-  const flipChain = () => {
-    bondOrders.reverse(); // reverse bonds along the chain
+  // Build the "locant vector" used to decide direction.
+  // For now, alkene/alkyne uses pos; others may use locant.
+  const vecForward = () => {
+    const v = [];
+    if (fg === "alkene" || fg === "alkyne") v.push(fgInfo.pos);
+    if (typeof fgInfo.locant === "number") v.push(fgInfo.locant);
+    return v;
   };
 
-  // Alcohol / amine / ketone: minimize substituent/functional locant
-  if (fg === "alcohol" || fg === "amine" || fg === "ketone") {
-    const loc = fgInfo.locant;
-    const mirror = n + 1 - loc; // locant if numbered from the other end
-    if (mirror < loc) {
-      fgInfo.locant = mirror;
-      flipChain();
-    }
+  const vecMirror = () => {
+    const v = [];
+    if (fg === "alkene" || fg === "alkyne") v.push(n - fgInfo.pos);
+    if (typeof fgInfo.locant === "number") v.push(n + 1 - fgInfo.locant);
+    return v;
+  };
+
+  const a = vecForward();
+  const b = vecMirror();
+
+  // Lexicographic compare: pick the orientation with the lowest set of locants
+  let shouldFlip = false;
+  for (let i = 0; i < Math.min(a.length, b.length); i++) {
+    if (b[i] < a[i]) { shouldFlip = true; break; }
+    if (b[i] > a[i]) break;
   }
 
-  // Alkene / alkyne: minimize multiple bond position (first multiply-bonded carbon)
-  if (fg === "alkene" || fg === "alkyne") {
-    const pos = fgInfo.pos;       // bond starts at carbon pos (1..n-1)
-    const mirror = n - pos;       // mirrored start position after flipping
-    if (mirror < pos) {
-      fgInfo.pos = mirror;
-      flipChain();
-    }
+  if (shouldFlip) {
+    if (fgInfo.pos !== undefined) fgInfo.pos = n - fgInfo.pos;
+    if (fgInfo.locant !== undefined) fgInfo.locant = n + 1 - fgInfo.locant;
+    flipChain();
   }
-
-  // Aldehyde / carboxylic acid / amide are terminal by definition.
-  // Their locant is effectively 1 and not shown, so no need to flip.
 
   return { fgInfo, bondOrders };
-}
-  
+}  
 function normalizeForCompare(s){
   return (s||"")
     .normalize("NFKC")
