@@ -98,6 +98,17 @@
     // ====== App State ======
     let currentMol = { correctName: "" };
 
+function zigzagPoints(n, startX = 120, baseY = 130, stepX = 70, ampY = 35) {
+  // Returns an array of {x,y} points for a carbon backbone in zig-zag form
+  const pts = [];
+  for (let i = 0; i < n; i++) {
+    const x = startX + i * stepX;
+    const y = baseY + (i % 2 === 0 ? ampY : -ampY);
+    pts.push({ x, y });
+  }
+  return pts;
+}
+    
     // ====== Molecule Generator (replace/expand later) ======
     function reroll() {
       const svg = document.getElementById("molSvg");
