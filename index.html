@@ -105,15 +105,27 @@
       // Example molecule
       currentMol.correctName = "hexan-2-ol";
 
-      svg.innerHTML = `
-        <line x1="100" y1="110" x2="200" y2="110" stroke="black" stroke-width="3"/>
-        <line x1="200" y1="110" x2="300" y2="110" stroke="black" stroke-width="3"/>
-        <line x1="300" y1="110" x2="400" y2="110" stroke="black" stroke-width="3"/>
-        <line x1="400" y1="110" x2="500" y2="110" stroke="black" stroke-width="3"/>
-        <line x1="500" y1="110" x2="600" y2="110" stroke="black" stroke-width="3"/>
+svg.innerHTML = `
+  <polyline
+    points="
+      100,120
+      160,80
+      220,120
+      280,80
+      340,120
+      400,80
+    "
+    fill="none"
+    stroke="black"
+    stroke-width="3"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
 
-        <text x="210" y="85" font-size="18">OH</text>
-      `;
+  <!-- OH substituent on carbon 2 -->
+  <line x1="160" y1="80" x2="160" y2="40" stroke="black" stroke-width="3"/>
+  <text x="145" y="30" font-size="18">OH</text>
+`;
     }
 
     // ====== Check Answer ======
