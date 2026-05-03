@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Organic Nomenclature Practice</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <style>
+    body {
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: #f8fafc;
+      margin: 0;
+      padding: 1.25rem;
+    }
+
+    .chem-app {
+      max-width: 960px;
+      margin: 0 auto;
+      background: #ffffff;
+      padding: 1.25rem;
+      border-radius: 6px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    }
+
+    .svgbox {
+      border: 2px solid #2a6fdb;
+      padding: 0.5rem;
+      margin-bottom: 1rem;
+      background: #ffffff;
+    }
+
+    svg {
+      display: block;
+      max-width: 100%;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      max-width: 420px;
+      padding: 0.5rem;
+      font-size: 1rem;
+      margin-top: 0.25rem;
+    }
+
+    button {
+      margin-top: 0.75rem;
+      margin-right: 0.5rem;
+      padding: 0.5rem 0.75rem;
+      font-size: 0.95rem;
+      cursor: pointer;
+    }
+
+    #feedback {
+      margin-top: 0.75rem;
+      font-weight: 600;
+    }
+
+    #answerReveal {
+      display: none;
+      margin-top: 0.75rem;
+      padding: 0.6rem 0.8rem;
+      border-left: 4px solid #2a6fdb;
+      background: #f4f7fb;
+      font-weight: 600;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="chem-app">
+    <p>
+      <strong>Practice only.</strong>
+      Your answers are <em>not</em> graded.
+    </p>
+
+    <div class="svgbox">
+      <svg id="molSvg"
+           width="800"
+           height="220"
+           viewBox="0 0 800 220"
+           xmlns="http://www.w3.org/2000/svg"></svg>
+    </div>
+
+    <label for="answerInput"><strong>Enter the IUPAC name:</strong></label><br />
+    <input id="answerInput" type="text" autocomplete="off" />
+
+    <div>
+      <button id="checkBtn" type="button">Check Answer</button>
+      <button id="resetBtn" type="button">Reset Practice</button>
+      <button id="showAnswerBtn" type="button">Show Answer</button>
+    </div>
+
+    <div id="feedback"></div>
+    <div id="answerReveal"></div>
+  </div>
+
+  <script>
+    // ====== App State ======
+    let currentMol = { correctName: "" };
+
+    // ====== Molecule Generator (replace/expand later) ======
+    function reroll() {
+      const svg = document.getElementById("molSvg");
+
+      // Example molecule
+      currentMol.correctName = "hexan-2-ol";
+
+      svg.innerHTML = `
+        <line x1="100" y1="110" x2="200" y2="110" stroke="black" stroke-width="3"/>
+        <line x1="200" y1="110" x2="300" y2="110" stroke="black" stroke-width="3"/>
+        <line x1="300" y1="110" x2="400" y2="110" stroke="black" stroke-width="3"/>
+        <line x1="400" y1="110" x2="500" y2="110" stroke="black" stroke-width="3"/>
+        <line x1="500" y1="110" x2="600" y2="110" stroke="black" stroke-width="3"/>
+
+        <text x="210" y="85" font-size="18">OH</text>
+      `;
+    }
+
+    // ====== Check Answer ======
+    function checkStudentAnswer() {
+      const input = document.getElementById("answerInput")
+        .value.trim().toLowerCase();
+      const expected = currentMol.correctName.toLowerCase();
+      const feedback = document.getElementById("feedback");
+
+      if (!input) {
+        feedback.textContent = "Please enter a name.";
+        feedback.style.color = "#b00020";
+        return;
+      }
+
+      if (input === expected) {
+        feedback.textContent = "✅ Correct!";
+        feedback.style.color = "#0a7a1f";
+      } else {
+        feedback.textContent = "❌ Not quite — try again.";
+        feedback.style.color = "#b00020";
+      }
+    }
+
+    // ====== Reset Practice ======
+    function resetPractice() {
+      document.getElementById("answerInput").value = "";
+      document.getElementById("feedback").textContent = "";
+
+      const box = document.getElementById("answerReveal");
+      box.style.display = "none";
+      document.getElementById("showAnswerBtn").textContent = "Show Answer";
+
+      reroll();
+    }
+
+    // ====== Show / Hide Answer ======
+    function toggleShowAnswer() {
+      const box = document.getElementById("answerReveal");
+      const btn = document.getElementById("showAnswerBtn");
+
+      if (box.style.display === "block") {
+        box.style.display = "none";
+        btn.textContent = "Show Answer";
+      } else {
+        box.innerHTML =
+          "✅ Correct answer: <strong>" +
+          currentMol.correctName +
+          "</strong>";
+        box.style.display = "block";
+        btn.textContent = "Hide Answer";
+      }
+    }
+
+    // ====== Event Wiring ======
+    document.addEventListener("DOMContentLoaded", () => {
+      document
+        .getElementById("checkBtn")
+        .addEventListener("click", checkStudentAnswer);
+
+      document
+        .getElementById("resetBtn")
+        .addEventListener("click", resetPractice);
+
+      document
+        .getElementById("showAnswerBtn")
+        .addEventListener("click", toggleShowAnswer);
+
+      reroll();
+    });
+  </script>
+</body>
+</html>
