@@ -2,221 +2,632 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Organic Nomenclature Practice</title>
+  <title>Organic Naming Practice (Skeletal Zig‑Zag)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-
   <style>
-    body {
+    :root{
+      --blue:#2a6fdb;
+      --bg:#f8fafc;
+      --card:#ffffff;
+      --ok:#0a7a1f;
+      --bad:#b00020;
+      --muted:#4b5563;
+    }
+    body{
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      background: #f8fafc;
-      margin: 0;
-      padding: 1.25rem;
+      background: var(--bg);
+      margin:0;
+      padding: 18px;
     }
-
-    .chem-app {
-      max-width: 960px;
+    .app{
+      max-width: 980px;
       margin: 0 auto;
-      background: #ffffff;
-      padding: 1.25rem;
-      border-radius: 6px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+      background: var(--card);
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,.08);
+      padding: 16px 16px 18px;
     }
-
-    .svgbox {
-      border: 2px solid #2a6fdb;
-      padding: 0.5rem;
-      margin-bottom: 1rem;
-      background: #ffffff;
+    .top{
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+      align-items:center;
     }
-
-    svg {
-      display: block;
-      max-width: 100%;
+    h1{ font-size: 18px; margin:0; }
+    .note{ color:var(--muted); margin: 6px 0 12px; font-size: 13px; }
+    .svgbox{
+      border: 2px solid var(--blue);
+      background:#fff;
+      padding: 8px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      overflow:auto;
     }
-
-    input[type="text"] {
+    svg{ display:block; max-width:100%; }
+    label{ font-weight: 650; }
+    input[type="text"]{
       width: 100%;
-      max-width: 420px;
-      padding: 0.5rem;
-      font-size: 1rem;
-      margin-top: 0.25rem;
+      max-width: 520px;
+      padding: 10px 12px;
+      margin-top: 6px;
+      font-size: 16px;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
     }
-
-    button {
-      margin-top: 0.75rem;
-      margin-right: 0.5rem;
-      padding: 0.5rem 0.75rem;
-      font-size: 0.95rem;
-      cursor: pointer;
+    .controls{
+      margin-top: 10px;
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
     }
-
-    #feedback {
-      margin-top: 0.75rem;
-      font-weight: 600;
+    button{
+      padding: 10px 12px;
+      font-size: 14px;
+      border-radius: 10px;
+      border: 1px solid #cbd5e1;
+      background:#fff;
+      cursor:pointer;
+      font-weight:650;
     }
-
-    #answerReveal {
-      display: none;
-      margin-top: 0.75rem;
-      padding: 0.6rem 0.8rem;
-      border-left: 4px solid #2a6fdb;
+    button.primary{
+      background: var(--blue);
+      border-color: var(--blue);
+      color:#fff;
+    }
+    #feedback{
+      margin-top: 10px;
+      font-weight: 700;
+    }
+    #answerReveal{
+      display:none;
+      margin-top: 10px;
+      padding: 10px 12px;
       background: #f4f7fb;
-      font-weight: 600;
+      border-left: 4px solid var(--blue);
+      border-radius: 8px;
+      font-weight: 650;
+    }
+    .subnote{
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 12.5px;
+      line-height: 1.35;
     }
   </style>
 </head>
 
 <body>
-  <div class="chem-app">
-    <p>
-      <strong>Practice only.</strong>
-      Your answers are <em>not</em> graded.
-    </p>
-
-    <div class="svgbox">
-      <svg id="molSvg"
-           width="800"
-           height="220"
-           viewBox="0 0 800 220"
-           xmlns="http://www.w3.org/2000/svg"></svg>
-    </div>
-
-    <label for="answerInput"><strong>Enter the IUPAC name:</strong></label><br />
-    <input id="answerInput" type="text" autocomplete="off" />
-
-    <div>
-      <button id="checkBtn" type="button">Check Answer</button>
-      <button id="resetBtn" type="button">Reset Practice</button>
-      <button id="showAnswerBtn" type="button">Show Answer</button>
-    </div>
-
-    <div id="feedback"></div>
-    <div id="answerReveal"></div>
+<div class="app">
+  <div class="top">
+    <h1>Organic Naming Practice (Bond‑Line / Skeletal)</h1>
+    <button id="newBtn" class="primary" type="button">New Molecule</button>
+  </div>
+  <div class="note">
+    Practice only (not graded). Type the IUPAC name, then check. Use “Show Answer” only after trying.
   </div>
 
-  <script>
-    // ====== App State ======
-    let currentMol = { correctName: "" };
+  <div class="svgbox">
+    <svg id="molSvg" width="900" height="260" viewBox="0 0 900 260"
+         xmlns="http://www.w3.org/2000/svg" role="img" aria-label="skeletal structure"></svg>
+  </div>
 
-function drawZigzagAsLines(svg, pts) {
-  let out = "";
-  for (let i = 0; i < pts.length - 1; i++) {
-    const a = pts[i], b = pts[i + 1];
-    out += `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}"
-                  stroke="black" stroke-width="3" stroke-linecap="round"/>`;
+  <label for="answerInput">Enter the IUPAC name:</label><br/>
+  <input id="answerInput" type="text" autocomplete="off" />
+
+  <div class="controls">
+    <button id="checkBtn" class="primary" type="button">Check Answer</button>
+    <button id="resetBtn" type="button">Reset Practice</button>
+    <button id="showAnswerBtn" type="button">Show Answer</button>
+  </div>
+
+  <div id="feedback"></div>
+  <div id="answerReveal"></div>
+
+  <div class="subnote">
+    This generator uses standard zig‑zag skeletal notation for carbon chains. [1](https://www.chemspider.com/Chemical-Structure.553658.html)[2](https://solanocc-my.sharepoint.com/personal/pgrant7_solano_edu/_layouts/15/Doc.aspx?sourcedoc=%7B9BD56543-B239-4458-BB9D-A62A5E5E3359%7D&file=chem%2011%20exam%202%20Summer%202025A.doc&action=default&mobileredirect=true&DefaultItemOpen=1)
+  </div>
+</div>
+
+<script>
+/* =========================
+   Utilities
+========================= */
+const FG_LIST = [
+  "alkane","alkene","alkyne","alcohol","ether",
+  "aldehyde","ketone","carboxylic acid","ester","amine","amide"
+];
+
+const ROOT = ["","meth","eth","prop","but","pent","hex","hept","oct","non","dec"];
+const ALKANE = ["","methane","ethane","propane","butane","pentane","hexane","heptane","octane","nonane","decane"];
+
+function randInt(min, max){ return Math.floor(Math.random()*(max-min+1))+min; }
+function choice(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+
+function root(n){ return ROOT[n] || ""; }
+function alkaneName(n){ return ALKANE[n] || (root(n)+"ane"); }
+
+function normalizeForCompare(s){
+  return (s||"")
+    .normalize("NFKC")
+    .toLowerCase()
+    .replace(/[–—−]/g,"-")
+    .replace(/\s+/g,"")
+    .replace(/[,;:.]/g,"");
+}
+
+/* =========================
+   Zig‑zag geometry
+========================= */
+function zigzagPoints(n, startX=130, baseY=140, stepX=70, ampY=34){
+  // Carbon vertices: alternating up/down = skeletal zigzag
+  const pts=[];
+  for(let i=0;i<n;i++){
+    pts.push({
+      x: startX + i*stepX,
+      y: baseY + (i%2===0 ? ampY : -ampY)
+    });
+  }
+  return pts;
+}
+
+function line(x1,y1,x2,y2, w=3){
+  return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"
+          stroke="black" stroke-width="${w}" stroke-linecap="round"/>`;
+}
+function text(x,y,s,size=18,weight=700){
+  return `<text x="${x}" y="${y}" font-size="${size}" font-weight="${weight}"
+          font-family="system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif"
+          fill="black">${escapeHtml(s)}</text>`;
+}
+function escapeHtml(str){
+  return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+/* Draw single/double/triple bond between two points */
+function bond(x1,y1,x2,y2, order=1){
+  if(order===1) return line(x1,y1,x2,y2,3);
+
+  // perpendicular offset for parallel lines
+  const dx=x2-x1, dy=y2-y1;
+  const len=Math.hypot(dx,dy) || 1;
+  const ox = (-dy/len)*4.0;
+  const oy = ( dx/len)*4.0;
+
+  if(order===2){
+    return (
+      line(x1+ox,y1+oy,x2+ox,y2+oy,2.6) +
+      line(x1-ox,y1-oy,x2-ox,y2-oy,2.6)
+    );
+  }
+  // triple
+  return (
+    line(x1,y1,x2,y2,2.6) +
+    line(x1+ox,y1+oy,x2+ox,y2+oy,2.3) +
+    line(x1-ox,y1-oy,x2-ox,y2-oy,2.3)
+  );
+}
+
+function drawBackbone(pts, bondOrders){
+  let out="";
+  for(let i=0;i<pts.length-1;i++){
+    const a=pts[i], b=pts[i+1];
+    out += bond(a.x,a.y,b.x,b.y, bondOrders[i] || 1);
   }
   return out;
 }
-    // ====== Molecule Generator (replace/expand later) ======
-function reroll() {
-  const svg = document.getElementById("molSvg");
 
-  // Example: pick a chain length (replace with your random generator)
-  const n = 6;
-
-  // Example: correct name (replace with your naming logic)
-  currentMol.correctName = "hexan-2-ol";
-
-  // Generate zig-zag backbone points
-  const pts = zigzagPoints(n);
-svg.innerHTML = drawZigzagAsLines(svg, pts);
-
-  // Build polyline points string
-  const pointsStr = pts.map(p => `${p.x},${p.y}`).join(" ");
-
-  // Draw backbone as a zig-zag polyline
-  svg.innerHTML = `
-    <polyline
-      points="${pointsStr}"
-      fill="none"
-      stroke="black"
-      stroke-width="3"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-    />
-  `;
-
-  // ---- Example substituent: OH on carbon 2 (index 1) ----
-  const i = 1; // carbon 2
-  const c = pts[i];
-  const dir = (i % 2 === 0) ? 1 : -1;  // alternate label direction for readability
+function attachLabelAtCarbon(pts, carbonIndex0, label){
+  const c = pts[carbonIndex0];
+  const dir = (carbonIndex0 % 2 === 0) ? 1 : -1; // alternate label direction
   const x2 = c.x;
-  const y2 = c.y + dir * 55;
-
-  svg.innerHTML += `
-    <line x1="${c.x}" y1="${c.y}" x2="${x2}" y2="${y2}"
-          stroke="black" stroke-width="3" stroke-linecap="round"/>
-    <text x="${x2 - 16}" y="${y2 + (dir < 0 ? -8 : 18)}" font-size="18">OH</text>
-  `;
+  const y2 = c.y + dir*62;
+  return (
+    line(c.x,c.y, x2,y2,3) +
+    text(x2-14, y2 + (dir<0 ? -10 : 20), label, 18, 800)
+  );
 }
-    // ====== Check Answer ======
-    function checkStudentAnswer() {
-      const input = document.getElementById("answerInput")
-        .value.trim().toLowerCase();
-      const expected = currentMol.correctName.toLowerCase();
-      const feedback = document.getElementById("feedback");
 
-      if (!input) {
-        feedback.textContent = "Please enter a name.";
-        feedback.style.color = "#b00020";
-        return;
-      }
+function drawCarbonylAtCarbon(pts, carbonIndex0){
+  const c = pts[carbonIndex0];
+  // Draw =O roughly upward
+  const ox = c.x + 12;
+  const oy = c.y - 70;
+  return bond(c.x,c.y, ox,oy,2) + text(ox+10, oy+6, "O", 20, 900);
+}
 
-      if (input === expected) {
-        feedback.textContent = "✅ Correct!";
-        feedback.style.color = "#0a7a1f";
-      } else {
-        feedback.textContent = "❌ Not quite — try again.";
-        feedback.style.color = "#b00020";
-      }
+function attachSingleLabelFromPoint(x1,y1,x2,y2,label){
+  return line(x1,y1,x2,y2,3) + text(x2-10, y2+18, label, 18, 800);
+}
+
+/* =========================
+   Chemistry model generation
+========================= */
+function generateMolecule(){
+  while(true){
+    const n = randInt(1,10);
+    const fg = choice(FG_LIST);
+
+    // validity constraints
+    if((fg==="alkene" || fg==="alkyne") && n<2) continue;
+    if(fg==="ketone" && n<3) continue;
+    if(fg==="ether" && n<2) continue;
+    if(fg==="ester" && n<2) continue;
+
+    const bondOrders = Array(Math.max(0,n-1)).fill(1);
+    const fgInfo = { kind: fg };
+
+    // random positions
+    if(fg==="alkene"){
+      fgInfo.pos = randInt(1, n-1);
+      bondOrders[fgInfo.pos-1]=2;
+    }
+    if(fg==="alkyne"){
+      fgInfo.pos = randInt(1, n-1);
+      bondOrders[fgInfo.pos-1]=3;
+    }
+    if(fg==="alcohol"){
+      fgInfo.locant = randInt(1,n);
+    }
+    if(fg==="amine"){
+      fgInfo.locant = randInt(1,n);
+    }
+    if(fg==="ketone"){
+      fgInfo.locant = randInt(2,n-1);
+    }
+    // terminal-only
+    if(fg==="aldehyde" || fg==="carboxylic acid" || fg==="amide"){
+      fgInfo.locant = 1; // conceptually terminal
+    }
+    // splits
+    if(fg==="ether"){
+      fgInfo.a = randInt(1,n-1);
+      fgInfo.b = n - fgInfo.a;
+    }
+    if(fg==="ester"){
+      fgInfo.a = randInt(1,n-1); // acyl carbons
+      fgInfo.b = n - fgInfo.a;   // alkyl carbons
     }
 
-    // ====== Reset Practice ======
-    function resetPractice() {
-      document.getElementById("answerInput").value = "";
-      document.getElementById("feedback").textContent = "";
+    const desc = describeMolecule(n, fg, fgInfo);
+    return { n, fg, bondOrders, fgInfo, ...desc };
+  }
+}
 
-      const box = document.getElementById("answerReveal");
-      box.style.display = "none";
-      document.getElementById("showAnswerBtn").textContent = "Show Answer";
+function describeMolecule(n, fg, fgInfo){
+  let name = "";
 
-      reroll();
+  if(fg==="alkane"){
+    name = alkaneName(n);
+  }
+  else if(fg==="alkene"){
+    const pos=fgInfo.pos;
+    name = (n===2) ? "ethene" : `${root(n)}-${pos}-ene`;
+  }
+  else if(fg==="alkyne"){
+    const pos=fgInfo.pos;
+    name = (n===2) ? "ethyne" : `${root(n)}-${pos}-yne`;
+  }
+  else if(fg==="alcohol"){
+    const loc=fgInfo.locant;
+    name = (n===1) ? "methanol" : `${root(n)}an-${loc}-ol`;
+  }
+  else if(fg==="amine"){
+    const loc=fgInfo.locant;
+    name = (n===1) ? "methanamine" : `${root(n)}an-${loc}-amine`;
+  }
+  else if(fg==="aldehyde"){
+    name = (n===1) ? "methanal" : `${root(n)}anal`;
+  }
+  else if(fg==="ketone"){
+    const loc=fgInfo.locant;
+    name = `${root(n)}an-${loc}-one`;
+  }
+  else if(fg==="carboxylic acid"){
+    name = (n===1) ? "methanoic acid" : `${root(n)}anoic acid`;
+  }
+  else if(fg==="amide"){
+    name = (n===1) ? "methanamide" : `${root(n)}anamide`;
+  }
+  else if(fg==="ether"){
+    const a=fgInfo.a, b=fgInfo.b;
+    const parent = Math.max(a,b);
+    const alkoxy = Math.min(a,b);
+    const parentName = (parent===1) ? "methane" : `${root(parent)}ane`;
+    const alkoxyName = (alkoxy===1) ? "methoxy" : `${root(alkoxy)}oxy`;
+    name = `${alkoxyName}${parentName}`; // e.g., methoxypropane
+  }
+  else if(fg==="ester"){
+    const a=fgInfo.a, b=fgInfo.b;
+    const acidName = (a===1) ? "methanoate" : `${root(a)}anoate`;
+    const alkylName = (b===1) ? "methyl" : `${root(b)}yl`;
+    name = `${alkylName} ${acidName}`; // e.g., ethyl propanoate
+  }
+
+  return {
+    correctName: name,
+    accepted: acceptedAnswers(n, fg, fgInfo, name)
+  };
+}
+
+function acceptedAnswers(n, fg, fgInfo, canonical){
+  const set = new Set();
+  set.add(canonical);
+
+  const add=(...xs)=>xs.forEach(x=>x && set.add(x));
+
+  if(fg==="alkene" && n>2){
+    add(`${fgInfo.pos}-${root(n)}ene`); // 2-hexene style
+  }
+  if(fg==="alkyne" && n>2){
+    add(`${fgInfo.pos}-${root(n)}yne`);
+  }
+  if(fg==="alcohol" && n>1){
+    add(`${fgInfo.locant}-${root(n)}anol`);
+    if(fgInfo.locant===1) add(`${root(n)}anol`);
+  }
+  if(fg==="amine" && n>1){
+    add(`${fgInfo.locant}-${root(n)}anamine`);
+    if(fgInfo.locant===1) add(`${root(n)}anamine`);
+  }
+  if(fg==="ketone"){
+    add(`${fgInfo.locant}-${root(n)}anone`);
+    if(n===3 && fgInfo.locant===2){
+      add("propanone","2-propanone","propan-2-one","propan-2-one");
+      add("acetone"); // optional common name acceptance
     }
+  }
+  if(fg==="carboxylic acid"){
+    if(n===1) add("formic acid");
+    if(n===2) add("acetic acid");
+  }
+  if(fg==="aldehyde"){
+    if(n===1) add("formaldehyde");
+    if(n===2) add("acetaldehyde");
+  }
+  if(fg==="amide"){
+    if(n===1) add("formamide");
+    if(n===2) add("acetamide");
+  }
+  if(fg==="ether"){
+    add(`1-${canonical}`); // accept explicit locant
+  }
+  if(fg==="ester"){
+    add(canonical.replace(" ","-"));
+  }
 
-    // ====== Show / Hide Answer ======
-    function toggleShowAnswer() {
-      const box = document.getElementById("answerReveal");
-      const btn = document.getElementById("showAnswerBtn");
+  return Array.from(set);
+}
 
-      if (box.style.display === "block") {
-        box.style.display = "none";
-        btn.textContent = "Show Answer";
-      } else {
-        box.innerHTML =
-          "✅ Correct answer: <strong>" +
-          currentMol.correctName +
-          "</strong>";
-        box.style.display = "block";
-        btn.textContent = "Hide Answer";
-      }
+/* =========================
+   Drawing for all functional groups
+========================= */
+function renderMolecule(m){
+  const svg = document.getElementById("molSvg");
+  svg.innerHTML = ""; // clear
+
+  // Title-ish label removed to keep pure quiz; keep minimal hint:
+  svg.innerHTML += text(24, 30, "Name this compound:", 18, 800);
+
+  if(m.fg === "ether"){
+    svg.innerHTML += drawEther(m);
+    return;
+  }
+  if(m.fg === "ester"){
+    svg.innerHTML += drawEster(m);
+    return;
+  }
+
+  // Single-chain families
+  const pts = zigzagPoints(m.n);
+  svg.innerHTML += drawBackbone(pts, m.bondOrders);
+
+  // Functional group drawing
+  if(m.fg === "alcohol"){
+    svg.innerHTML += attachLabelAtCarbon(pts, m.fgInfo.locant-1, "OH");
+  }
+  else if(m.fg === "amine"){
+    svg.innerHTML += attachLabelAtCarbon(pts, m.fgInfo.locant-1, "NH2");
+  }
+  else if(m.fg === "ketone"){
+    svg.innerHTML += drawCarbonylAtCarbon(pts, m.fgInfo.locant-1);
+  }
+  else if(m.fg === "aldehyde"){
+    // terminal carbonyl at end carbon
+    const endIdx = pts.length-1;
+    svg.innerHTML += drawCarbonylAtCarbon(pts, endIdx);
+    // optional H label omitted; skeletal convention often just shows carbonyl O
+  }
+  else if(m.fg === "carboxylic acid"){
+    const endIdx = pts.length-1;
+    svg.innerHTML += drawCarbonylAtCarbon(pts, endIdx);
+    // add OH to the right of carbonyl carbon
+    const c = pts[endIdx];
+    svg.innerHTML += attachSingleLabelFromPoint(c.x, c.y, c.x+58, c.y+18, "OH");
+  }
+  else if(m.fg === "amide"){
+    const endIdx = pts.length-1;
+    svg.innerHTML += drawCarbonylAtCarbon(pts, endIdx);
+    const c = pts[endIdx];
+    svg.innerHTML += attachSingleLabelFromPoint(c.x, c.y, c.x+68, c.y+18, "NH2");
+  }
+  // alkane/alkene/alkyne need no extra labels besides bond order already on backbone
+}
+
+function drawEther(m){
+  const svgParts = [];
+  // split into a and b chains connected by O
+  const a = m.fgInfo.a, b = m.fgInfo.b;
+  const left = zigzagPoints(a, 130, 150, 65, 28);
+  const right = zigzagPoints(b, 520, 150, 65, 28);
+
+  svgParts.push(drawBackbone(left, Array(Math.max(0,a-1)).fill(1)));
+  svgParts.push(drawBackbone(right, Array(Math.max(0,b-1)).fill(1)));
+
+  const lEnd = left[left.length-1];
+  const rStart = right[0];
+
+  // oxygen between them
+  const ox = (lEnd.x + rStart.x)/2;
+  const oy = (lEnd.y + rStart.y)/2 - 10;
+
+  svgParts.push(line(lEnd.x, lEnd.y, ox, oy, 3));
+  svgParts.push(line(ox, oy, rStart.x, rStart.y, 3));
+  svgParts.push(text(ox-6, oy-12, "O", 20, 900));
+
+  return svgParts.join("");
+}
+
+function drawEster(m){
+  const svgParts = [];
+  const a = m.fgInfo.a; // acyl carbons
+  const b = m.fgInfo.b; // alkyl carbons
+
+  // acid chain includes carbonyl carbon as last vertex
+  const acid = zigzagPoints(a, 130, 150, 65, 28);
+  svgParts.push(drawBackbone(acid, Array(Math.max(0,a-1)).fill(1)));
+
+  const carbonylC = acid[acid.length-1];
+  svgParts.push(drawCarbonylAtCarbon(acid, acid.length-1));
+
+  // single bond to O to the right then alkyl chain
+  const oX = carbonylC.x + 62;
+  const oY = carbonylC.y + 12;
+  svgParts.push(line(carbonylC.x, carbonylC.y, oX, oY, 3));
+  svgParts.push(text(oX-6, oY-10, "O", 20, 900));
+
+  const alkyl = zigzagPoints(b, oX + 70, 150, 65, 28);
+  // connect O to alkyl start
+  svgParts.push(line(oX, oY, alkyl[0].x, alkyl[0].y, 3));
+  svgParts.push(drawBackbone(alkyl, Array(Math.max(0,b-1)).fill(1)));
+
+  return svgParts.join("");
+}
+
+/* =========================
+   Quiz logic (check, reset, show answer)
+========================= */
+let currentMol = null;
+
+function newMolecule(){
+  currentMol = generateMolecule();
+  renderMolecule(currentMol);
+  clearUI();
+}
+
+function clearUI(){
+  document.getElementById("answerInput").value = "";
+  const fb = document.getElementById("feedback");
+  fb.textContent = "";
+  fb.style.color = "";
+  const box = document.getElementById("answerReveal");
+  box.style.display = "none";
+  box.innerHTML = "";
+  document.getElementById("showAnswerBtn").textContent = "Show Answer";
+}
+
+function partialHint(user){
+  // quick, helpful hints: family / chain / locant
+  const fg = currentMol.fg;
+  if(!user) return "Enter a name first.";
+
+  const u = normalizeForCompare(user);
+  const c = normalizeForCompare(currentMol.correctName);
+
+  // very close typo
+  if(editDistance(u, c) <= 2) return "Very close — likely a small typo/hyphen/number formatting issue.";
+
+  // family hint
+  const familyMap = {
+    "alkane":"-ane",
+    "alkene":"-ene",
+    "alkyne":"-yne",
+    "alcohol":"-ol",
+    "amine":"-amine",
+    "aldehyde":"-al",
+    "ketone":"-one",
+    "carboxylic acid":"-oic acid",
+    "amide":"-amide",
+    "ether":"alkoxyalkane",
+    "ester":"alkyl alkanoate"
+  };
+  return `Hint: check the functional group naming pattern (${familyMap[fg] || fg}) and lowest locant rule.`;
+}
+
+// tiny edit-distance for “close” feedback
+function editDistance(a,b){
+  const n=a.length, m=b.length;
+  const dp = Array.from({length:m+1}, (_,i)=>Array(n+1).fill(0));
+  for(let i=0;i<=n;i++) dp[0][i]=i;
+  for(let j=0;j<=m;j++) dp[j][0]=j;
+  for(let j=1;j<=m;j++){
+    for(let i=1;i<=n;i++){
+      dp[j][i] = Math.min(
+        dp[j-1][i] + 1,
+        dp[j][i-1] + 1,
+        dp[j-1][i-1] + (a[i-1]===b[j-1] ? 0 : 1)
+      );
     }
+  }
+  return dp[m][n];
+}
 
-    // ====== Event Wiring ======
-    document.addEventListener("DOMContentLoaded", () => {
-      document
-        .getElementById("checkBtn")
-        .addEventListener("click", checkStudentAnswer);
+function checkAnswer(){
+  const raw = document.getElementById("answerInput").value;
+  const fb = document.getElementById("feedback");
 
-      document
-        .getElementById("resetBtn")
-        .addEventListener("click", resetPractice);
+  if(!raw.trim()){
+    fb.textContent = "Please enter a name.";
+    fb.style.color = "var(--bad)";
+    return;
+  }
 
-      document
-        .getElementById("showAnswerBtn")
-        .addEventListener("click", toggleShowAnswer);
+  const got = normalizeForCompare(raw);
+  const expected = currentMol.accepted.map(normalizeForCompare);
 
-      reroll();
-    });
-  </script>
+  if(expected.includes(got)){
+    fb.textContent = "✅ Correct!";
+    fb.style.color = "var(--ok)";
+  } else {
+    fb.textContent = "❌ Not quite. " + partialHint(raw);
+    fb.style.color = "var(--bad)";
+  }
+}
+
+function resetPractice(){
+  clearUI();
+  newMolecule();
+}
+
+function toggleAnswer(){
+  const box = document.getElementById("answerReveal");
+  const btn = document.getElementById("showAnswerBtn");
+  if(box.style.display === "block"){
+    box.style.display = "none";
+    btn.textContent = "Show Answer";
+  } else {
+    box.innerHTML = `✅ Correct answer: <strong>${escapeHtml(currentMol.correctName)}</strong>`;
+    box.style.display = "block";
+    btn.textContent = "Hide Answer";
+  }
+}
+
+/* =========================
+   Wire up
+========================= */
+document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("newBtn").addEventListener("click", newMolecule);
+  document.getElementById("checkBtn").addEventListener("click", checkAnswer);
+  document.getElementById("resetBtn").addEventListener("click", resetPractice);
+  document.getElementById("showAnswerBtn").addEventListener("click", toggleAnswer);
+
+  document.getElementById("answerInput").addEventListener("keydown", (e) => {
+    if(e.key === "Enter"){ e.preventDefault(); checkAnswer(); }
+  });
+
+  newMolecule();
+});
+</script>
 </body>
 </html>
