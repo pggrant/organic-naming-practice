@@ -346,15 +346,31 @@ function generateMolecule(){
 // Normalize to lowest-locant numbering
 ({ fgInfo, bondOrders } = normalizeOrientation(n, fg, fgInfo, bondOrders));
 
+    function generateMolecule(){
+  while(true){
+    const n = randInt(1,10);
+    const fg = choice(FG_LIST);
+
+    const bondOrders = Array(Math.max(0,n-1)).fill(1);
+    const fgInfo = { kind: fg };
+
+    // assign locants / bond positions here ...
+
+    // ✅ NORMALIZE HERE AND ONLY HERE
+    normalizeOrientation(n, fg, fgInfo, bondOrders);
+
+    const desc = describeMolecule(n, fg, fgInfo);
+    return { n, fg, bondOrders, fgInfo, ...desc };
+  }
+}
+
 // Now generate the correct name/accepted answers using the normalized locants
 const desc = describeMolecule(n, fg, fgInfo);
 return { n, fg, bondOrders, fgInfo, ...desc };
   }
 }
 
-  // after you assign fgInfo.locant / fgInfo.pos and set bondOrders accordingly:
-({ fgInfo, bondOrders } = normalizeOrientation(n, fg, fgInfo, bondOrders));
-  
+   
 function describeMolecule(n, fg, fgInfo){
   let name = "";
 
