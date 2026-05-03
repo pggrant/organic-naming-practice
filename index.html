@@ -110,35 +110,46 @@ function zigzagPoints(n, startX = 120, baseY = 130, stepX = 70, ampY = 35) {
 }
     
     // ====== Molecule Generator (replace/expand later) ======
-    function reroll() {
-      const svg = document.getElementById("molSvg");
+function reroll() {
+  const svg = document.getElementById("molSvg");
 
-      // Example molecule
-      currentMol.correctName = "hexan-2-ol";
+  // Example: pick a chain length (replace with your random generator)
+  const n = 6;
 
-svg.innerHTML = `
-  <polyline
-    points="
-      100,120
-      160,80
-      220,120
-      280,80
-      340,120
-      400,80
-    "
-    fill="none"
-    stroke="black"
-    stroke-width="3"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-  />
+  // Example: correct name (replace with your naming logic)
+  currentMol.correctName = "hexan-2-ol";
 
-  <!-- OH substituent on carbon 2 -->
-  <line x1="160" y1="80" x2="160" y2="40" stroke="black" stroke-width="3"/>
-  <text x="145" y="30" font-size="18">OH</text>
-`;
-    }
+  // Generate zig-zag backbone points
+  const pts = zigzagPoints(n);
 
+  // Build polyline points string
+  const pointsStr = pts.map(p => `${p.x},${p.y}`).join(" ");
+
+  // Draw backbone as a zig-zag polyline
+  svg.innerHTML = `
+    <polyline
+      points="${pointsStr}"
+      fill="none"
+      stroke="black"
+      stroke-width="3"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+  `;
+
+  // ---- Example substituent: OH on carbon 2 (index 1) ----
+  const i = 1; // carbon 2
+  const c = pts[i];
+  const dir = (i % 2 === 0) ? 1 : -1;  // alternate label direction for readability
+  const x2 = c.x;
+  const y2 = c.y + dir * 55;
+
+  svg.innerHTML += `
+    <line x1="${c.x}" y1="${c.y}" x2="${x2}" y2="${y2}"
+          stroke="black" stroke-width="3" stroke-linecap="round"/>
+    <text x="${x2 - 16}" y="${y2 + (dir < 0 ? -8 : 18)}" font-size="18">OH</text>
+  `;
+}
     // ====== Check Answer ======
     function checkStudentAnswer() {
       const input = document.getElementById("answerInput")
