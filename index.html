@@ -298,64 +298,64 @@ function attachSingleLabelFromPoint(x1,y1,x2,y2,label){
 /* =========================
    Chemistry model generation
 ========================= */
-function generateMolecule(){
-  while(true){
-    const n = randInt(1,10);
+
+  function generateMolecule(){
+  while (true) {
+    const n = randInt(1, 10);
     const fg = choice(FG_LIST);
 
     // validity constraints
-    if((fg==="alkene" || fg==="alkyne") && n<2) continue;
-    if(fg==="ketone" && n<3) continue;
-    if(fg==="ether" && n<2) continue;
-    if(fg==="ester" && n<2) continue;
+    if ((fg === "alkene" || fg === "alkyne") && n < 2) continue;
+    if (fg === "ketone" && n < 3) continue;
+    if (fg === "ether" && n < 2) continue;
+    if (fg === "ester" && n < 2) continue;
 
-    const bondOrders = Array(Math.max(0,n-1)).fill(1);
+    const bondOrders = Array(Math.max(0, n - 1)).fill(1);
     const fgInfo = { kind: fg };
 
     // random positions
-    if(fg==="alkene"){
-      fgInfo.pos = randInt(1, n-1);
-      bondOrders[fgInfo.pos-1] = 2;
+    if (fg === "alkene") {
+      fgInfo.pos = randInt(1, n - 1);
+      bondOrders[fgInfo.pos - 1] = 2;
     }
-    if(fg==="alkyne"){
-      fgInfo.pos = randInt(1, n-1);
-      bondOrders[fgInfo.pos-1] = 3;
+
+    if (fg === "alkyne") {
+      fgInfo.pos = randInt(1, n - 1);
+      bondOrders[fgInfo.pos - 1] = 3;
     }
-    if(fg==="alcohol") fgInfo.locant = randInt(1,n);
-    if(fg==="amine")   fgInfo.locant = randInt(1,n);
-    if(fg==="ketone")  fgInfo.locant = randInt(2,n-1);
+
+    if (fg === "alcohol") fgInfo.locant = randInt(1, n);
+    if (fg === "amine") fgInfo.locant = randInt(1, n);
+    if (fg === "ketone") fgInfo.locant = randInt(2, n - 1);
 
     // terminal-only
-    if(fg==="aldehyde" || fg==="carboxylic acid" || fg==="amide"){
+    if (
+      fg === "aldehyde" ||
+      fg === "carboxylic acid" ||
+      fg === "amide"
+    ) {
       fgInfo.locant = 1;
     }
 
     // splits
-    if(fg==="ether"){
-      fgInfo.a = randInt(1,n-1);
-      fgInfo.b = n - fgInfo.a;
-    }
-    if(fg==="ester"){
-      fgInfo.a = randInt(1,n-1);
+    if (fg === "ether") {
+      fgInfo.a = randInt(1, n - 1);
       fgInfo.b = n - fgInfo.a;
     }
 
-    // ✅ normalize AFTER pos/locant set and bondOrders set
+    if (fg === "ester") {
+      fgInfo.a = randInt(1, n - 1);
+      fgInfo.b = n - fgInfo.a;
+    }
+
+    // ✅ normalize AFTER pos / locants are set
     normalizeOrientation(n, fg, fgInfo, bondOrders);
-
-    
 
     const desc = describeMolecule(n, fg, fgInfo);
     return { n, fg, bondOrders, fgInfo, ...desc };
-    }
   }
 }
-  // Now generate the correct name/accepted answers using the normalized locants
-const desc = describeMolecule(n, fg, fgInfo);
-return { n, fg, bondOrders, fgInfo, ...desc };
-  }
-}
-
+  
 function acceptedAnswers(n, fg, fgInfo, canonical){
   const set = new Set();
   set.add(canonical);
