@@ -98,17 +98,15 @@
     // ====== App State ======
     let currentMol = { correctName: "" };
 
-function zigzagPoints(n, startX = 120, baseY = 130, stepX = 70, ampY = 35) {
-  // Returns an array of {x,y} points for a carbon backbone in zig-zag form
-  const pts = [];
-  for (let i = 0; i < n; i++) {
-    const x = startX + i * stepX;
-    const y = baseY + (i % 2 === 0 ? ampY : -ampY);
-    pts.push({ x, y });
+function drawZigzagAsLines(svg, pts) {
+  let out = "";
+  for (let i = 0; i < pts.length - 1; i++) {
+    const a = pts[i], b = pts[i + 1];
+    out += `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}"
+                  stroke="black" stroke-width="3" stroke-linecap="round"/>`;
   }
-  return pts;
+  return out;
 }
-    
     // ====== Molecule Generator (replace/expand later) ======
 function reroll() {
   const svg = document.getElementById("molSvg");
@@ -121,6 +119,7 @@ function reroll() {
 
   // Generate zig-zag backbone points
   const pts = zigzagPoints(n);
+svg.innerHTML = drawZigzagAsLines(svg, pts);
 
   // Build polyline points string
   const pointsStr = pts.map(p => `${p.x},${p.y}`).join(" ");
