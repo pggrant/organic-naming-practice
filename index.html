@@ -148,6 +148,41 @@ function choice(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
 function root(n){ return ROOT[n] || ""; }
 function alkaneName(n){ return ALKANE[n] || (root(n)+"ane"); }
 
+function normalizeOrientation(n, fg, fgInfo, bondOrders) {
+  // Returns { fgInfo, bondOrders } adjusted so numbering from the left
+  // gives the lowest possible locant for the key feature.
+
+  // helper to reverse the chain
+  const flipChain = () => {
+    bondOrders.reverse(); // reverse bonds along the chain
+  };
+
+  // Alcohol / amine / ketone: minimize substituent/functional locant
+  if (fg === "alcohol" || fg === "amine" || fg === "ketone") {
+    const loc = fgInfo.locant;
+    const mirror = n + 1 - loc; // locant if numbered from the other end
+    if (mirror < loc) {
+      fgInfo.locant = mirror;
+      flipChain();
+    }
+  }
+
+  // Alkene / alkyne: minimize multiple bond position (first multiply-bonded carbon)
+  if (fg === "alkene" || fg === "alkyne") {
+    const pos = fgInfo.pos;       // bond starts at carbon pos (1..n-1)
+    const mirror = n - pos;       // mirrored start position after flipping
+    if (mirror < pos) {
+      fgInfo.pos = mirror;
+      flipChain();
+    }
+  }
+
+  // Aldehyde / carboxylic acid / amide are terminal by definition.
+  // Their locant is effectively 1 and not shown, so no need to flip.
+
+  return { fgInfo, bondOrders };
+}
+  
 function normalizeForCompare(s){
   return (s||"")
     .normalize("NFKC")
@@ -289,12 +324,20 @@ function generateMolecule(){
       fgInfo.a = randInt(1,n-1); // acyl carbons
       fgInfo.b = n - fgInfo.a;   // alkyl carbons
     }
+// ... you already created n, fg, fgInfo, bondOrders, and set bond order(s)
 
-    const desc = describeMolecule(n, fg, fgInfo);
-    return { n, fg, bondOrders, fgInfo, ...desc };
+// Normalize to lowest-locant numbering
+({ fgInfo, bondOrders } = normalizeOrientation(n, fg, fgInfo, bondOrders));
+
+// Now generate the correct name/accepted answers using the normalized locants
+const desc = describeMolecule(n, fg, fgInfo);
+return { n, fg, bondOrders, fgInfo, ...desc };
   }
 }
 
+  // after you assign fgInfo.locant / fgInfo.pos and set bondOrders accordingly:
+({ fgInfo, bondOrders } = normalizeOrientation(n, fg, fgInfo, bondOrders));
+  
 function describeMolecule(n, fg, fgInfo){
   let name = "";
 
@@ -351,55 +394,35 @@ function describeMolecule(n, fg, fgInfo){
   };
 }
 
-function acceptedAnswers(n, fg, fgInfo, canonical){
+function normalizeForCompare(s) {
+  return s
+    .toLowerCase()
+    .replace(/[–—−]/g, "-")
+    .replace(/\s+/g, "")
+    .replace(/-/g, "");
+}
+  
+function acceptedLocantFormats(canonical) {
   const set = new Set();
   set.add(canonical);
 
-  const add=(...xs)=>xs.forEach(x=>x && set.add(x));
+  // Normalize dash types
+  const name = canonical.replace(/[–—−]/g, "-");
 
-  if(fg==="alkene" && n>2){
-    add(`${fgInfo.pos}-${root(n)}ene`); // 2-hexene style
-  }
-  if(fg==="alkyne" && n>2){
-    add(`${fgInfo.pos}-${root(n)}yne`);
-  }
-  if(fg==="alcohol" && n>1){
-    add(`${fgInfo.locant}-${root(n)}anol`);
-    if(fgInfo.locant===1) add(`${root(n)}anol`);
-  }
-  if(fg==="amine" && n>1){
-    add(`${fgInfo.locant}-${root(n)}anamine`);
-    if(fgInfo.locant===1) add(`${root(n)}anamine`);
-  }
-  if(fg==="ketone"){
-    add(`${fgInfo.locant}-${root(n)}anone`);
-    if(n===3 && fgInfo.locant===2){
-      add("propanone","2-propanone","propan-2-one","propan-2-one");
-      add("acetone"); // optional common name acceptance
-    }
-  }
-  if(fg==="carboxylic acid"){
-    if(n===1) add("formic acid");
-    if(n===2) add("acetic acid");
-  }
-  if(fg==="aldehyde"){
-    if(n===1) add("formaldehyde");
-    if(n===2) add("acetaldehyde");
-  }
-  if(fg==="amide"){
-    if(n===1) add("formamide");
-    if(n===2) add("acetamide");
-  }
-  if(fg==="ether"){
-    add(`1-${canonical}`); // accept explicit locant
-  }
-  if(fg==="ester"){
-    add(canonical.replace(" ","-"));
-  }
+  // Match patterns like: hexan-2-ol, pent-3-ene, butan-2-one
+  const m = name.match(/^([a-z]+?)(?:an|en|yn)?-(\d+)-(ol|amine|one|ene|yne)$/);
+  if (!m) return Array.from(set);
+
+  const [, root, locant, suffix] = m;
+
+  // Rebuild parent (remove trailing an/en/yn if present)
+  let parent = name.split("-")[0];
+
+  // Older / alternate format: 2-hexanol, 2-pentene
+  set.add(`${locant}-${parent}${suffix}`);
 
   return Array.from(set);
 }
-
 /* =========================
    Drawing for all functional groups
 ========================= */
@@ -573,28 +596,30 @@ function editDistance(a,b){
   return dp[m][n];
 }
 
-function checkAnswer(){
-  const raw = document.getElementById("answerInput").value;
-  const fb = document.getElementById("feedback");
+function checkAnswer() {
+  const userRaw = document.getElementById("answerInput").value;
+  const feedback = document.getElementById("feedback");
 
-  if(!raw.trim()){
-    fb.textContent = "Please enter a name.";
-    fb.style.color = "var(--bad)";
+  if (!userRaw.trim()) {
+    feedback.textContent = "Please enter a name.";
+    feedback.style.color = "crimson";
     return;
   }
 
-  const got = normalizeForCompare(raw);
-  const expected = currentMol.accepted.map(normalizeForCompare);
+  const expected = acceptedLocantFormats(currentMol.correctName)
+    .map(normalizeForCompare);
 
-  if(expected.includes(got)){
-    fb.textContent = "✅ Correct!";
-    fb.style.color = "var(--ok)";
+  const user = normalizeForCompare(userRaw);
+
+  if (expected.includes(user)) {
+    feedback.textContent = "✅ Correct!";
+    feedback.style.color = "green";
   } else {
-    fb.textContent = "❌ Not quite. " + partialHint(raw);
-    fb.style.color = "var(--bad)";
+    feedback.textContent = "❌ Not quite. Check locant placement or suffix.";
+    feedback.style.color = "crimson";
   }
 }
-
+  
 function resetPractice(){
   clearUI();
   newMolecule();
